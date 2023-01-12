@@ -18,6 +18,8 @@ Este mapa contiene:
 
 En el archivo **listaCiudadesSMN.json** contiene todos los datos geográficos provistos por el SMN, incluyendo el ID para utilizar la nueva API del SMN.
 
+## Ver: https://juanmaioli.github.io/MapaSMN/
+
 # Como usar la nueva API del SMN argentino
 Esta API puede cambiar sin previo aviso. No es publica el SMN no da ningún api oficial.
 
