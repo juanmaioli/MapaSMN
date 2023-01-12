@@ -31,9 +31,9 @@
           <td><div class="square" style="background-color: #198754;"></div></td><td class="small">Centro de esquí</td>
           <td><div class="square" style="background-color: #6610f2;"></div></td><td class="small">Ciudad</td>
           <td><div class="square" style="background-color: #80eb15;"></div></td><td class="small">Colonia</td>
-          <td><div class="square" style="background-color: #DDDDDD;"></div></td><td class="small">Localidad</td>
+          <td><div class="square" style="background-color: #940ce1;"></div></td><td class="small">Localidad</td>
           <td><div class="square" style="background-color: #e5b1c2;"></div></td><td class="small">Observatorio</td>
-          <td><div class="square" style="background-color: #940ce1;"></div></td><td class="small">Otro</td>
+          <td><div class="square" style="background-color: #fff000;"></div></td><td class="small">Otro</td>
           <td><div class="square" style="background-color: #74366F;"></div></td><td class="small">Paraje</td>
           <td><div class="square" style="background-color: #fd7e14;"></div></td><td class="small">Parque nacional</td>
           <td><div class="square" style="background-color: #d63384;"></div></td><td class="small">Paso fronterizo</td>
@@ -74,7 +74,7 @@ async function cargaMapa(){
   const tableDiv = document.getElementById('tablaCiudades')
   let tablaFinal = `<table class='table table-sm table-striped table-hover'><thead><tr><th>SMN ID</th><th>Nombre</th><th>Provincia</th><th>Lat</th><th>Lon</th></tr></thead><tbody>`
   let marcadores = ''
-  const colores = {'Barrio': '#0dcaf0','Base Militar': '#2b6be1','Caserío': '#555555','Centro de esquí': '#198754','Ciudad': '#6610f2','Colonia': '#80eb15','Localidad': '#DDDDDD','Observatorio': '#e5b1c2','Otro': '#940ce1','Paraje': '#74366F','Parque nacional': '#fd7e14','Paso fronterizo': '#d63384','Pueblo': '#6f42c1','Punto Turisitico': '#20c997','Villa': '#c20952'}
+  const colores = {'Barrio': '#0dcaf0','Base Militar': '#2b6be1','Caserío': '#555555','Centro de esquí': '#198754','Ciudad': '#6610f2','Colonia': '#80eb15','Localidad': '#940ce1','Observatorio': '#e5b1c2','Otro': 'fff000','Paraje': '#74366F','Parque nacional': '#fd7e14','Paso fronterizo': '#d63384','Pueblo': '#6f42c1','Punto Turisitico': '#20c997','Villa': '#c20952'}
 
   let referencias = new L.LayerGroup(marcadores);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(smnMap);
@@ -90,7 +90,7 @@ async function cargaMapa(){
         <td class='text-end'>${ciudad.smn_lon}</td>
         </tr>`
         const color = colores[ciudad.smn_tipo] || '#28A745'
-        marcadores += L.circleMarker([ciudad.smn_lat,ciudad.smn_lon],{color: color,radius: 5,weight:2,fillOpacity:0.7}).addTo(referencias).bindPopup(`<h4 class='text-primary'>${ciudad.smn_nombre}</h4><strong>${ciudad.smn_provincia}</strong><br>${ciudad.smn_tipo}`).openPopup();
+        marcadores += L.circleMarker([ciudad.smn_lat,ciudad.smn_lon],{color: color,radius: 5,weight:2,fillOpacity:0.7}).addTo(referencias).bindPopup(`<h4 class='text-primary'>${ciudad.smn_nombre}</h4><strong>${ciudad.smn_provincia}</strong><br>${ciudad.smn_tipo}<br>SmnID: ${ciudad.smn_id_interno}`).openPopup();
     }
     tablaFinal += `</tbody></table>`
     tableDiv.innerHTML = tablaFinal
