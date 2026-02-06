@@ -1,117 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" data-bs-theme="auto">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapa SMN</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+  <title>Mapa SMN 🇦🇷</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
   <style>
-    .minimapa {width: 100%;height: 700px; border: 1px solid #053481;border-radius: 10px;}
-    .card-800{min-height: 800px;max-height: 800px;}
-    .square { width: 15px;height: 15px;}
+    .minimapa {width: 100%; height: 700px; border-radius: 12px;}
+    .card-800 {min-height: 800px; max-height: 800px;}
+    
+    /* Adaptación del mapa a modo oscuro */
+    [data-bs-theme="dark"] .leaflet-tile {
+        filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
+    [data-bs-theme="dark"] .leaflet-container {
+        background: #2b2b2b;
+    }
+    [data-bs-theme="dark"] .leaflet-popup-content-wrapper,
+    [data-bs-theme="dark"] .leaflet-popup-tip {
+        background-color: #343a40;
+        color: #f8f9fa;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #555; }
   </style>
+  <script>
+    // Script para modo oscuro con persistencia e interruptor
+    (() => {
+      'use strict'
+      const getStoredTheme = () => localStorage.getItem('theme')
+      const setStoredTheme = theme => localStorage.setItem('theme', theme)
+      
+      const getPreferredTheme = () => {
+        const storedTheme = getStoredTheme()
+        if (storedTheme) return storedTheme
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+
+      const setTheme = theme => {
+        document.documentElement.setAttribute('data-bs-theme', theme)
+        setStoredTheme(theme)
+        updateSwitch(theme)
+      }
+
+      const updateSwitch = theme => {
+        const sw = document.getElementById('themeSwitch')
+        if (sw) sw.checked = (theme === 'dark')
+      }
+
+      // Inicialización
+      window.addEventListener('DOMContentLoaded', () => {
+        const currentTheme = getPreferredTheme()
+        setTheme(currentTheme)
+        
+        const sw = document.getElementById('themeSwitch')
+        if (sw) {
+          sw.addEventListener('change', (e) => {
+            setTheme(e.target.checked ? 'dark' : 'light')
+          })
+        }
+      })
+
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (!getStoredTheme()) setTheme(getPreferredTheme())
+      })
+    })()
+  </script>
 </head>
-<body>
-  <main class="container-fluid">
-    <section class="row m-2">
-      <article class="col text-center">
-        <h2>Mapa Argentina en base a datos del Servicio Mererológico Nacional</h2>
+<body class="bg-body-tertiary">
+  <main class="container-fluid py-4">
+    <section class="row mb-4 align-items-center">
+      <article class="col-md-8 text-md-start text-center">
+        <h2 class="fw-bold text-primary mb-0">🇦🇷 Mapa Argentina <span class="text-secondary fs-5 opacity-75">Datos SMN</span></h2>
       </article>
-    </section>
-    <section class="row m-1">
-      <article class="col">
-        <table class="table table-sm">
-          <tr>
-          <td><div class="square" style="background-color: #0dcaf0;"></div></td><td class="small">Barrio</td>
-          <td><div class="square" style="background-color: #2b6be1;"></div></td><td class="small">Base Militar</td>
-          <td><div class="square" style="background-color: #555555;"></div></td><td class="small">Caserío</td>
-          <td><div class="square" style="background-color: #198754;"></div></td><td class="small">Centro de esquí</td>
-          <td><div class="square" style="background-color: #6610f2;"></div></td><td class="small">Ciudad</td>
-          <td><div class="square" style="background-color: #80eb15;"></div></td><td class="small">Colonia</td>
-          <td><div class="square" style="background-color: #940ce1;"></div></td><td class="small">Localidad</td>
-          <td><div class="square" style="background-color: #e5b1c2;"></div></td><td class="small">Observatorio</td>
-          <td><div class="square" style="background-color: #fff000;"></div></td><td class="small">Otro</td>
-          <td><div class="square" style="background-color: #74366F;"></div></td><td class="small">Paraje</td>
-          <td><div class="square" style="background-color: #fd7e14;"></div></td><td class="small">Parque nacional</td>
-          <td><div class="square" style="background-color: #d63384;"></div></td><td class="small">Paso fronterizo</td>
-          <td><div class="square" style="background-color: #6f42c1;"></div></td><td class="small">Pueblo</td>
-          <td><div class="square" style="background-color: #20c997;"></div></td><td class="small">Punto Turisitico</td>
-          <td><div class="square" style="background-color: #c20952;"></div></td><td class="small">Villa</td>
-          </tr>
-          </table>
-      </article>
-    </section>
-    <section class="row mt-1">
-      <article class="col-7">
-        <div class="card card-800 border border-primary">
-          <div class="card-header"><h4 id="tituloMapa">&nbsp;Mapa Ciudades</h4></div>
-          <div class="card-body m-1"><div class="minimapa" id='mapid'><h1>MAPA NO DISPONIBLE</h1></div></div>
+      <article class="col-md-4 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3">
+        <div class="form-check form-switch d-flex align-items-center gap-2 bg-body shadow-sm px-3 py-2 rounded-pill border">
+          <label class="form-check-label small mb-0" for="themeSwitch">☀️</label>
+          <input class="form-check-input mt-0" type="checkbox" role="switch" id="themeSwitch" style="cursor: pointer;">
+          <label class="form-check-label small mb-0" for="themeSwitch">🌙</label>
         </div>
       </article>
-      <article class="col-5">
-        <div class="card card-800 border border-primary">
-          <div class="card-header"><h4>&nbsp;Ciudades</h4></div>
-          <div class="card-body m-1 overflow-auto"><div id="tablaCiudades"></div></div>
+    </section>
+    
+    <section class="row mb-3">
+      <article class="col">
+        <div class="d-flex flex-wrap gap-2 justify-content-center" id="legendContainer">
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #0dcaf0;"></span>Barrio</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #2b6be1;"></span>Base Militar</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #555555;"></span>Caserío</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #198754;"></span>Centro de esquí</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #6610f2;"></span>Ciudad</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #80eb15;"></span>Colonia</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #940ce1;"></span>Localidad</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #e5b1c2;"></span>Observatorio</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #fff000;"></span>Otro</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #74366F;"></span>Paraje</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #fd7e14;"></span>Parque nacional</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #d63384;"></span>Paso fronterizo</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #6f42c1;"></span>Pueblo</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #20c997;"></span>Punto Turístico</span>
+             <span class="badge bg-body text-body shadow-sm border"><span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: #c20952;"></span>Villa</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="row">
+      <article class="col-lg-8 mb-3">
+        <div class="card card-800 border-0 shadow-sm bg-body">
+          <div class="card-header bg-transparent border-0 pt-3">
+            <h4 class="card-title text-primary" id="tituloMapa">🗺️ Mapa Ciudades</h4>
+          </div>
+          <div class="card-body p-2">
+            <div class="minimapa shadow-inner" id='mapid'></div>
+          </div>
+        </div>
+      </article>
+      <article class="col-lg-4">
+        <div class="card card-800 border-0 shadow-sm bg-body">
+          <div class="card-header bg-transparent border-0 pt-3">
+            <h4 class="card-title text-primary">🏙️ Ciudades</h4>
+          </div>
+          <div class="card-body p-0 overflow-auto">
+            <div id="tablaCiudades" class="p-2"></div>
+          </div>
         </div>
       </article>
     </section>
   </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
-
 <script type="text/javascript">
-  //Centro Argentina
   const defaultLat = -34.87
   const defaultLon = -64.76
   let smnMap = L.map('mapid').setView([defaultLat ,defaultLon], 5);
-cargaMapa()
-async function cargaMapa(){
-  const tableDiv = document.getElementById('tablaCiudades')
-  let tablaFinal = `<table class='table table-sm table-striped table-hover'><thead><tr><th>SMN ID</th><th>Nombre</th><th>Provincia</th><th>Lat</th><th>Lon</th></tr></thead><tbody>`
-  let marcadores = ''
-  const colores = {'Barrio': '#0dcaf0','Base Militar': '#2b6be1','Caserío': '#555555','Centro de esquí': '#198754','Ciudad': '#6610f2','Colonia': '#80eb15','Localidad': '#940ce1','Observatorio': '#e5b1c2','Otro': 'fff000','Paraje': '#74366F','Parque nacional': '#fd7e14','Paso fronterizo': '#d63384','Pueblo': '#6f42c1','Punto Turisitico': '#20c997','Villa': '#c20952'}
+  
+  cargaMapa()
 
-  let referencias = new L.LayerGroup(marcadores);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(smnMap);
-  // let grupoMarcadores= new L.markerClusterGroup();
-  const response = await fetch('./listaCiudadesSMN.json');
-  const ciudades = await response.json();
+  async function cargaMapa(){
+    const tableDiv = document.getElementById('tablaCiudades')
+    const colores = {'Barrio': '#0dcaf0','Base Militar': '#2b6be1','Caserío': '#555555','Centro de esquí': '#198754','Ciudad': '#6610f2','Colonia': '#80eb15','Localidad': '#940ce1','Observatorio': '#e5b1c2','Otro': '#fff000','Paraje': '#74366F','Parque nacional': '#fd7e14','Paso fronterizo': '#d63384','Pueblo': '#6f42c1','Punto Turisitico': '#20c997','Villa': '#c20952'}
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(smnMap);
+
+    const response = await fetch('./listaCiudadesSMN.json');
+    const ciudades = await response.json();
+
+    const clusterGroup = new L.markerClusterGroup({
+        chunkedLoading: true,
+        showCoverageOnHover: false,
+        spiderfyOnMaxZoom: true
+    });
+
+    let filasTabla = [];
 
     for(let ciudad of ciudades){
-      tablaFinal += `<tr class=''>
-        <td class='text-end'>${ciudad.smn_id_interno}</td>
-        <td><a href="javascript:void(0)" onclick="ubicaCiudad(${ciudad.smn_lat},${ciudad.smn_lon},'${ciudad.smn_tipo} ${ciudad.smn_provincia}')">${ciudad.smn_nombre}</a></td>
-        <td>${ciudad.smn_provincia}</td>
-        <td class='text-end'>${ciudad.smn_lat}</td>
-        <td class='text-end'>${ciudad.smn_lon}</td>
-        </tr>`
+      filasTabla.push(`<tr>
+        <td class='text-muted small'><code>${ciudad.smn_id_interno}</code></td>
+        <td>
+            <a href="javascript:void(0)" class="text-decoration-none fw-bold" onclick="ubicaCiudad(${ciudad.smn_lat},${ciudad.smn_lon},'${ciudad.smn_tipo} ${ciudad.smn_provincia}')">
+                ${ciudad.smn_nombre}
+            </a>
+            <br><small class="text-muted">${ciudad.smn_tipo}</small>
+        </td>
+        <td><span class="badge bg-light text-secondary border">${ciudad.smn_provincia}</span></td>
+        </tr>`);
+        
         const color = colores[ciudad.smn_tipo] || '#28A745'
-        marcadores += L.circleMarker([ciudad.smn_lat,ciudad.smn_lon],{color: color,radius: 5,weight:2,fillOpacity:0.7}).addTo(referencias).bindPopup(`<h4 class='text-primary'>${ciudad.smn_nombre}</h4><strong>${ciudad.smn_provincia}</strong><br>${ciudad.smn_tipo}<br>SmnID: ${ciudad.smn_id_interno}`).openPopup();
+        const marker = L.circleMarker([ciudad.smn_lat,ciudad.smn_lon], {
+            color: color,
+            radius: 5,
+            weight: 2,
+            fillOpacity: 0.7
+        }).bindPopup(`
+            <div class="text-center">
+                <h5 class='text-primary mb-1'>${ciudad.smn_nombre}</h5>
+                <span class="badge bg-secondary mb-2">${ciudad.smn_provincia}</span><br>
+                <small class="text-muted">${ciudad.smn_tipo}</small><br>
+                <code class="text-dark">ID: ${ciudad.smn_id_interno}</code>
+            </div>
+        `);
+        clusterGroup.addLayer(marker);
     }
-    tablaFinal += `</tbody></table>`
-    tableDiv.innerHTML = tablaFinal
+    
+    tableDiv.innerHTML = `<table class='table table-hover table-borderless align-middle'>
+        <thead class="table-light sticky-top">
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Provincia</th>
+            </tr>
+        </thead>
+        <tbody>${filasTabla.join('')}</tbody></table>`;
 
-  L.circleMarker([defaultLat ,defaultLon],{color: '#28A745',radius: 8,weight:2,fillOpacity:0.8}).addTo(smnMap).bindPopup("<h4>Argentina</h4>").openPopup();
+    L.circleMarker([defaultLat ,defaultLon],{color: '#28A745',radius: 8,weight:2,fillOpacity:0.8}).addTo(smnMap).bindPopup("<h5 class='mb-0'>🇦🇷 Centro Argentina</h5>").openPopup();
 
-  referencias.addTo(smnMap);
+    smnMap.addLayer(clusterGroup);
 
-  let popup = L.popup();
+    let popup = L.popup();
     function onMapClick(e) {
-      popup.setLatLng(e.latlng).setContent("Ubicación: " + e.latlng.toString()).openOn(smnMap);
+      popup.setLatLng(e.latlng).setContent("📍 Ubicación: " + e.latlng.toString()).openOn(smnMap);
     }
-  smnMap.on('click', onMapClick);
-}
+    smnMap.on('click', onMapClick);
+  }
 
-function ubicaCiudad(centerlat,centerlon,cuidad){
-  smnMap.flyTo([centerlat,centerlon],12);
-  let tituloMapa = document.getElementById('tituloMapa');
-  tituloMapa.innerHTML = cuidad;
-}
+  function ubicaCiudad(centerlat,centerlon,cuidad){
+    smnMap.flyTo([centerlat,centerlon],12);
+    let tituloMapa = document.getElementById('tituloMapa');
+    tituloMapa.innerHTML = "📍 " + cuidad;
+  }
 </script>
 </html>
